@@ -2,6 +2,9 @@ const db = require('../models');
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
 
+async function connection(req, res, next) {
+    return res.status(200).json(`Connected to KMS, running on port ${process.env.PORT}`);
+}
 async function getUserPublicKey(req, res, next) {
     const id = req.params.id;
     try {
@@ -239,6 +242,7 @@ async function deleteElectionKeys(req, res, next) {
 }
 
 module.exports = {
+    connection,
     getElectionPublicKey,
     getElectionPrivateKey,
     getUserPublicKey,

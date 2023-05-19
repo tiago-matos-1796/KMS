@@ -4,6 +4,7 @@ const auth_middleware = require('../middleware/auth.middleware');
 
 module.exports = app => {
     const keysController = require('../controllers/keys.controller');
+    router.get('/', auth_middleware, keysController.connection);
     router.get('/user/public/:id', auth_middleware,  keysController.getUserPublicKey);
     router.get('/user/private/:id', auth_middleware,  keysController.getUserPrivateKey);
     router.post('/user', auth_middleware,  keysController.createUserKeys);
