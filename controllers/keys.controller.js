@@ -1,6 +1,7 @@
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
+const {KMSDecrypt, KMSEncrypt} = require("../services/encryption.service")
 
 async function connection(req, res, next) {
     return res.status(200).json(`Connected to KMS, running on port ${process.env.PORT}`);
@@ -22,7 +23,7 @@ async function getUserPublicKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json({key: key.public_key});
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key})));
     } catch (err) {
         throw err;
     }
@@ -45,7 +46,7 @@ async function getUserPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json({key: key.private_key, iv: key.iv});
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv})));
     } catch (err) {
         throw err;
     }
@@ -68,7 +69,7 @@ async function getElectionPublicKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json({key: key.public_key});
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key})));
     } catch (err) {
         throw err;
     }
@@ -91,7 +92,7 @@ async function getElectionPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json({key: key.private_key, iv: key.iv});
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv})));
     } catch (err) {
         throw err;
     }
@@ -100,11 +101,12 @@ async function getElectionPrivateKey(req, res, next) {
 async function createUserKeys(req, res, next) {
     const body = req.body;
     try {
-        const check = await db.signature.exists({_id: body._id});
+        const decrypted = JSON.parse(KMSDecrypt(body));
+        const check = await db.signature.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
         }
-        const userKey = new db.signature(body);
+        const userKey = new db.signature(decrypted);
         userKey.save(userKey);
         const token = req.body.token || req.query.token || req.headers["access-token"];
         const _id = jwt.decode(token)._id;
@@ -124,11 +126,12 @@ async function createUserKeys(req, res, next) {
 async function createElectionKeys(req, res, next) {
     const body = req.body;
     try {
-        const check = await db.election.exists({_id: body._id});
+        const decrypted = JSON.parse(KMSDecrypt(body));
+        const check = await db.election.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
         }
-        const electionKey = new db.election(body);
+        const electionKey = new db.election(decrypted);
         electionKey.save(electionKey);
         const token = req.body.token || req.query.token || req.headers["access-token"];
         const _id = jwt.decode(token)._id;
@@ -149,11 +152,12 @@ async function updateUserKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
+        const decrypted = JSON.parse(KMSDecrypt(body));
         const check = await db.signature.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
         }
-        const key = await db.signature.findByIdAndUpdate(id, body);
+        const key = await db.signature.findByIdAndUpdate(id, decrypted);
         key.save(key);
         const token = req.body.token || req.query.token || req.headers["access-token"];
         const _id = jwt.decode(token)._id;
@@ -174,11 +178,12 @@ async function updateElectionKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
+        const decrypted = JSON.parse(KMSDecrypt(body));
         const check = await db.election.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
         }
-        const key = await db.election.findByIdAndUpdate(id, body);
+        const key = await db.election.findByIdAndUpdate(id, decrypted);
         key.save(key);
         const token = req.body.token || req.query.token || req.headers["access-token"];
         const _id = jwt.decode(token)._id;
