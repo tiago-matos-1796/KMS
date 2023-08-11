@@ -1,5 +1,5 @@
-import crypto from "crypto";
-import {Buffer} from "buffer";
+const crypto = require("crypto");
+const {Buffer} = require("buffer");
 const internal_algorithm = "aes-256-cbc";
 
 function KMSEncrypt(data) {

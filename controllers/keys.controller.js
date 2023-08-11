@@ -101,7 +101,7 @@ async function getElectionPrivateKey(req, res, next) {
 async function createUserKeys(req, res, next) {
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body));
+        const decrypted = JSON.parse(KMSDecrypt(body.data));
         const check = await db.signature.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
@@ -126,7 +126,7 @@ async function createUserKeys(req, res, next) {
 async function createElectionKeys(req, res, next) {
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body));
+        const decrypted = JSON.parse(KMSDecrypt(body.data));
         const check = await db.election.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
@@ -152,7 +152,7 @@ async function updateUserKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body));
+        const decrypted = JSON.parse(KMSDecrypt(body.data));
         const check = await db.signature.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
@@ -178,7 +178,7 @@ async function updateElectionKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body));
+        const decrypted = JSON.parse(KMSDecrypt(body.data));
         const check = await db.election.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
