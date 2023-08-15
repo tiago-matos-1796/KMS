@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const app = express();
+const { limiter } = require("./middleware/limiter.middleware");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
@@ -30,6 +31,7 @@ async function check() {
 }
 check();
 require('./routes/keys.routes')(app);
+app.use(limiter);
 
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
