@@ -15,7 +15,14 @@ async function getUserPublicKey(req, res, next) {
         }
         const key = await db.signature.findById(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Sign public key for id:${id} fetched`,
             type: 'SELECT',
@@ -38,7 +45,14 @@ async function getUserPrivateKey(req, res, next) {
         }
         const key = await db.signature.findById(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Sign private key for id:${id} fetched`,
             type: 'SELECT',
@@ -61,7 +75,14 @@ async function getElectionPublicKey(req, res, next) {
         }
         const key = await db.election.findById(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Election public key for id:${id} fetched`,
             type: 'SELECT',
@@ -84,7 +105,14 @@ async function getElectionPrivateKey(req, res, next) {
         }
         const key = await db.election.findById(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Election private key for id:${id} fetched`,
             type: 'SELECT',
@@ -109,7 +137,14 @@ async function createUserKeys(req, res, next) {
         const userKey = new db.signature(decrypted);
         userKey.save(userKey);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: 'Signature key inserted',
             type: 'INSERT',
@@ -134,7 +169,14 @@ async function createElectionKeys(req, res, next) {
         const electionKey = new db.election(decrypted);
         electionKey.save(electionKey);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: 'Election key inserted',
             type: 'INSERT',
@@ -160,7 +202,14 @@ async function updateUserKeys(req, res, next) {
         const key = await db.signature.findByIdAndUpdate(id, decrypted);
         key.save(key);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Signature keys for id:${id} updated`,
             type: 'UPDATE',
@@ -186,7 +235,14 @@ async function updateElectionKeys(req, res, next) {
         const key = await db.election.findByIdAndUpdate(id, decrypted);
         key.save(key);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Election keys for id:${id} updated`,
             type: 'UPDATE',
@@ -209,7 +265,14 @@ async function deleteUserKeys(req, res, next) {
         }
         await db.signature.findByIdAndRemove(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Signature keys for id:${id} deleted`,
             type: 'DELETE',
@@ -232,7 +295,14 @@ async function deleteElectionKeys(req, res, next) {
         }
         await db.election.findByIdAndRemove(id);
         const token = req.body.token || req.query.token || req.headers["access-token"];
-        const _id = jwt.decode(token)._id;
+        let _id = '';
+        jwt.verify(token, process.env.JWT_SECRET, {}, function (err, decoded) {
+            if (err) {
+                return next(createError(401, "Invalid Token"));
+            } else {
+                _id = decoded._id;
+            }
+        });
         const log = new db.log({
             description: `Election keys for id:${id} deleted`,
             type: 'DELETE',
