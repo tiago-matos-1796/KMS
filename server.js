@@ -5,8 +5,18 @@ const app = express();
 const { limiter } = require("./middleware/limiter.middleware");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
-require('dotenv').config();
+app.disable("x-powered-by");
+app.use(cors({
+    methods: ["GET", "PATCH", "POST", "DELETE"],
+    maxAge: 31536000,
+    optionsSuccessStatus: 200,
+}));
+app.use(function (req, res, next) {
+    res.setHeader("Content-Security-Policy", "default-src 'self'");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("X-Powered-By", "ASP.NET");
+    return next();
+});
 
 const db = require('./models');
 db.mongoose.connect(db.url, {
