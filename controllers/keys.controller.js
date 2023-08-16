@@ -60,7 +60,7 @@ async function getUserPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv})));
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag})));
     } catch (err) {
         throw err;
     }
@@ -120,7 +120,7 @@ async function getElectionPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv})));
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag})));
     } catch (err) {
         throw err;
     }
