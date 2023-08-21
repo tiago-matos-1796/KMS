@@ -21,7 +21,7 @@
     "moment-timezone": "^0.5.43",
     "mongodb": "^5.4.0",
     "mongoose": "^7.1.0",
-    "morgan": "~1.9.1",
+    "morgan": "~1.10.0",
     "prettier": "^3.0.1",
     "pug": "^3.0.2"
   }
