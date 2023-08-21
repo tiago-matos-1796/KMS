@@ -15,7 +15,7 @@
     "express-limit": "^1.0.0",
     "express-rate-limit": "^6.9.0",
     "http-errors": "~1.6.3",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.1",
     "locallydb": "^0.0.9",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
