@@ -19,8 +19,8 @@
     "locallydb": "^0.0.9",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "mongodb": "^5.4.0",
-    "mongoose": "^7.1.0",
+    "mongodb": "^5.8.0",
+    "mongoose": "^7.5.0",
     "morgan": "~1.9.1",
     "prettier": "^3.0.1",
     "pug": "^3.0.2"
