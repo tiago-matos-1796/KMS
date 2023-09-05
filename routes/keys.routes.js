@@ -1,10 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const auth_middleware = require("../middleware/auth.middleware");
+const cors = require("cors");
+const helmet = require("helmet");
 const limit = require("express-limit").limit;
 
 module.exports = (app) => {
   const keysController = require("../controllers/keys.controller");
+    app.use(
+        helmet({
+            crossOriginResourcePolicy: {
+                policy: "same-site",
+            },
+        })
+    );
+    app.use(cors({
+        origin: process.env.SVM_URI,
+        methods: ["GET", "PATCH", "POST", "DELETE"],
+        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "access-token"],
+        maxAge: 31536000,
+        optionsSuccessStatus: 200,
+    }));
   router.get(
     "/",
     limit({
