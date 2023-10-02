@@ -21,7 +21,7 @@ function createSecret(publicKey, cipher) {
 }
 
 function KMSEncrypt(data, key, publicKey) {
-    const iv = crypto.randomBytes(16);
+    const iv = crypto.randomBytes(32);
     const cipher = crypto.createCipheriv(internal_algorithm, key, iv);
     let encryptedData = cipher.update(data, "utf8", "base64");
     encryptedData += cipher.final("base64");
