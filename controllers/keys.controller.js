@@ -1,13 +1,26 @@
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
-const {KMSDecrypt, KMSEncrypt} = require("../services/encryption.service")
+const {generateECDHKeys, KMSDecrypt, KMSEncrypt, createSecret} = require("../services/encryption.service");
+var cache = require("../services/cache.service")();
 
 async function connection(req, res, next) {
     return res.status(200).json(`Connected to KMS, running on port ${process.env.PORT}`);
 }
+
+async function createCommunication(req, res, next) {
+    const id = req.params.id;
+    try {
+        const data = generateECDHKeys();
+        cache.set(id, data.cipher);
+        return res.status(200).json({public: data.public});
+    } catch (err) {
+        throw err;
+    }
+}
 async function getUserPublicKey(req, res, next) {
     const id = req.params.id;
+    const publicKey = req.headers["public-key"];
     try {
         const check = await db.signature.exists({_id: id});
         if(!check) {
@@ -30,7 +43,9 @@ async function getUserPublicKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key})));
+        const ecdh = generateECDHKeys();
+        const secret = createSecret(publicKey, ecdh.cipher);
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key}), secret, ecdh.public));
     } catch (err) {
         throw err;
     }
@@ -38,6 +53,7 @@ async function getUserPublicKey(req, res, next) {
 
 async function getUserPrivateKey(req, res, next) {
     const id = req.params.id;
+    const publicKey = req.headers["public-key"];
     try {
         const check = await db.signature.exists({_id: id});
         if(!check) {
@@ -60,7 +76,9 @@ async function getUserPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag})));
+        const ecdh = generateECDHKeys();
+        const secret = createSecret(publicKey, ecdh.cipher);
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag}), secret, ecdh.public));
     } catch (err) {
         throw err;
     }
@@ -68,6 +86,7 @@ async function getUserPrivateKey(req, res, next) {
 
 async function getElectionPublicKey(req, res, next) {
     const id = req.params.id;
+    const publicKey = req.headers["public-key"];
     try {
         const check = await db.election.exists({_id: id});
         if(!check) {
@@ -90,7 +109,9 @@ async function getElectionPublicKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key})));
+        const ecdh = generateECDHKeys();
+        const secret = createSecret(publicKey, ecdh.cipher);
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.public_key}), secret, ecdh.public));
     } catch (err) {
         throw err;
     }
@@ -98,6 +119,7 @@ async function getElectionPublicKey(req, res, next) {
 
 async function getElectionPrivateKey(req, res, next) {
     const id = req.params.id;
+    const publicKey = req.headers["public-key"];
     try {
         const check = await db.election.exists({_id: id});
         if(!check) {
@@ -120,7 +142,9 @@ async function getElectionPrivateKey(req, res, next) {
             created_at: new Date()
         });
         log.save(log);
-        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag})));
+        const ecdh = generateECDHKeys();
+        const secret = createSecret(publicKey, ecdh.cipher);
+        return res.status(200).json(KMSEncrypt(JSON.stringify({key: key.private_key, iv: key.iv, tag: key.tag}), secret, ecdh.public));
     } catch (err) {
         throw err;
     }
@@ -129,7 +153,9 @@ async function getElectionPrivateKey(req, res, next) {
 async function createUserKeys(req, res, next) {
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body.data));
+        const ecdh = cache.get(body.commId);
+        const secret = createSecret(body.public_key, ecdh);
+        const decrypted = JSON.parse(KMSDecrypt(body.data, secret, body.iv, body.tag));
         const check = await db.signature.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
@@ -161,7 +187,9 @@ async function createUserKeys(req, res, next) {
 async function createElectionKeys(req, res, next) {
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body.data));
+        const ecdh = cache.get(body.commId);
+        const secret = createSecret(body.public_key, ecdh);
+        const decrypted = JSON.parse(KMSDecrypt(body.data, secret, body.iv, body.tag));
         const check = await db.election.exists({_id: decrypted._id});
         if(check) {
             return next(createError(400, `Duplicate key`));
@@ -194,7 +222,9 @@ async function updateUserKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body.data));
+        const ecdh = cache.get(body.commId);
+        const secret = createSecret(body.public_key, ecdh);
+        const decrypted = JSON.parse(KMSDecrypt(body.data, secret, body.iv, body.tag));
         const check = await db.signature.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
@@ -227,7 +257,9 @@ async function updateElectionKeys(req, res, next) {
     const id = req.params.id;
     const body = req.body;
     try {
-        const decrypted = JSON.parse(KMSDecrypt(body.data));
+        const ecdh = cache.get(body.commId);
+        const secret = createSecret(body.public_key, ecdh);
+        const decrypted = JSON.parse(KMSDecrypt(body.data, secret, body.iv, body.tag));
         const check = await db.election.exists({_id: id});
         if(!check) {
             return next(createError(404, `Key not found`));
@@ -318,6 +350,7 @@ async function deleteElectionKeys(req, res, next) {
 
 module.exports = {
     connection,
+    createCommunication,
     getElectionPublicKey,
     getElectionPrivateKey,
     getUserPublicKey,

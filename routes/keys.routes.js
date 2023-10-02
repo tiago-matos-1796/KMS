@@ -7,20 +7,28 @@ const limit = require("express-limit").limit;
 
 module.exports = (app) => {
   const keysController = require("../controllers/keys.controller");
-    app.use(
-        helmet({
-            crossOriginResourcePolicy: {
-                policy: "same-site",
-            },
-        })
-    );
-    app.use(cors({
-        origin: process.env.SVM_URI,
-        methods: ["GET", "PATCH", "POST", "DELETE"],
-        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "access-token"],
-        maxAge: 31536000,
-        optionsSuccessStatus: 200,
-    }));
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: {
+        policy: "same-site",
+      },
+    }),
+  );
+  app.use(
+    cors({
+      origin: process.env.SVM_URI,
+      methods: ["GET", "PATCH", "POST", "DELETE"],
+      allowedHeaders: [
+        "Origin",
+        "X-Requested-With",
+        "Content-Type",
+        "Accept",
+        "access-token",
+      ],
+      maxAge: 31536000,
+      optionsSuccessStatus: 200,
+    }),
+  );
   router.get(
     "/",
     limit({
@@ -31,6 +39,16 @@ module.exports = (app) => {
     }),
     auth_middleware,
     keysController.connection,
+  );
+  router.get(
+    "/create-communication/:id",
+    limit({
+      max: 50,
+      period: 60 * 1000,
+      status: 429,
+      message: "Too many requests",
+    }),
+    keysController.createCommunication,
   );
   router.get(
     "/user/public/:id",
