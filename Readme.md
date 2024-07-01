@@ -35,7 +35,7 @@ If you choose not to use Secure Vote please change **SVM_URI** with the URI of t
 
 ## Installation
 
-Use the package manager [npm](https://www.npmjs.com) to install addon dependencies.
+Use the package manager [npm](https://www.npmjs.com) to install KMS dependencies.
 
 ```bash
 npm install
